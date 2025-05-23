@@ -1,15 +1,14 @@
 #include <raylib.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include "positions.h"
 
-typedef struct {
-  int ZoneXL;
-  int ZoneXR;
-  int ZoneYL;
-  int ZoneYR;
-} ZoneArea;
+CrossCord GetCrossPosition(CrossCord CrossPos[], int index)
+{
+  return CrossPos[index];
+}
 
-ZoneArea zone;
-
-ZoneArea box = {309, 485, 256, 490};
+int Boxes = sizeof(box) / sizeof(box[0]);
 
 bool IsInsideBox(ZoneArea zone, int x, int y)
 {
@@ -23,7 +22,13 @@ int main()
   InitWindow(800, 800, "tictactoe");
   Texture2D Board = LoadTexture("./assets/board.png");
   Texture2D Cross = LoadTexture("./assets/cross.png");
+  Texture2D Circle = LoadTexture("./assets/circle.png");
   bool PlacedCross = false;
+  bool PlacedCircle = false;
+  int PlacedIndex  = -1;
+  bool IsCrossTurn = true;
+  int MousePosX = GetMouseX();
+  int MousePosY = GetMouseY();
   SetTargetFPS(50);
 
   // Game loop
@@ -31,18 +36,38 @@ int main()
     BeginDrawing();
     ClearBackground(RAYWHITE);
     DrawTexture(Board, 0, 0, RAYWHITE);
+
     if (PlacedCross) {
-      DrawTexture(Cross, 315, 290, RAYWHITE);
+      DrawTexture(Cross, CrossPos[4].CrossX, CrossPos[4].CrossY, RAYWHITE);
     }
-    if (IsInsideBox(box, GetMouseX(), GetMouseY()) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      PlacedCross = true;
+    if (PlacedCircle) {
+      DrawTexture(Circle, 50, 290, RAYWHITE);
     }
+
+    for (int i = 0; i < Boxes; i++) {
+      if (IsInsideBox(box[i], GetMouseX(), GetMouseY())&& IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        if (IsCrossTurn && !PlacedCross) {
+          PlacedCross = true;
+          IsCrossTurn = false;
+        } else if (!IsCrossTurn && !PlacedCircle) {
+          PlacedCircle = true;
+          IsCrossTurn = true;
+        }
+      }
+    }
+
     EndDrawing();
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+      printf("X: %d\n", MousePosX);
+      printf("Y: %d\n", MousePosY);
+    }
     
   }
 
   UnloadTexture(Board);
   UnloadTexture(Cross);
+  UnloadTexture(Circle);
   // Closing Window
   CloseWindow();
   return 0;
